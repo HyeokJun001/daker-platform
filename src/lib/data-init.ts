@@ -38,10 +38,24 @@ export async function initializeData(): Promise<void> {
         fetch("/data/teams.json"),
       ]);
 
-    const hackathons: Hackathon[] = await hackathonsRes.json();
+    const hackathonsRaw: Hackathon[] = await hackathonsRes.json();
     const detailRaw: RawHackathonDetail = await detailRes.json();
     const leaderboardRaw: RawLeaderboard = await leaderboardRes.json();
     const teams: Team[] = await teamsRes.json();
+
+    // Dynamically compute hackathon status based on current date
+    const now = new Date();
+    const hackathons = hackathonsRaw.map((h) => {
+      const deadline = new Date(h.period.submissionDeadlineAt);
+      const end = new Date(h.period.endAt);
+      let status = h.status;
+      if (now > end || now > deadline) {
+        status = "ended";
+      } else if (h.status === "upcoming" && now >= deadline) {
+        status = "ongoing";
+      }
+      return { ...h, status };
+    });
 
     // Flatten hackathon details
     const details: HackathonDetail[] = [

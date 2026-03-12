@@ -14,7 +14,7 @@ export const STATUS_LABELS: Record<string, string> = {
 
 export const STATUS_COLORS: Record<string, string> = {
   ended: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
-  ongoing: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
+  ongoing: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300",
   upcoming: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
 };
 
@@ -35,4 +35,4 @@ export const STORAGE_KEYS = {
   DATA_VERSION: "daker_data_version",
 } as const;
 
-export const CURRENT_DATA_VERSION = "1.0.0";
+export const CURRENT_DATA_VERSION = "1.1.0";

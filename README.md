@@ -1,36 +1,130 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DAKER Platform
 
-## Getting Started
+해커톤 탐색부터 팀 빌딩, 제출, 랭킹까지 한 곳에서 관리하는 원스톱 해커톤 플랫폼입니다.
 
-First, run the development server:
+> **배포 URL**: [https://daker-platform.vercel.app](https://daker-platform.vercel.app)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## 기술 스택
+
+| 분류 | 기술 |
+|------|------|
+| 프레임워크 | Next.js 16 (App Router) |
+| 언어 | TypeScript |
+| UI 컴포넌트 | shadcn/ui v4 (Base UI 기반) |
+| 스타일링 | Tailwind CSS v4 |
+| 상태 관리 | Zustand (localStorage persist) |
+| 검색 | cmdk (Command Palette) |
+| 다크모드 | next-themes |
+| 아이콘 | Lucide React |
+| 알림 | Sonner (Toast) |
+| 배포 | Vercel |
+
+---
+
+## 주요 페이지 및 기능
+
+| 페이지 | 경로 | 설명 |
+|--------|------|------|
+| 메인 | `/` | Hero 섹션, 통계, 빠른 탐색, 진행중/예정 해커톤 |
+| 해커톤 목록 | `/hackathons` | 전체 해커톤 목록, 상태/태그 필터, 북마크 |
+| 해커톤 상세 | `/hackathons/[slug]` | 8개 탭(개요, 일정, 규칙, 상금, 리더보드, 팀, 제출, FAQ) |
+| 캠프 (팀 빌딩) | `/camp` | 팀 모집 게시판, 팀 생성, 해커톤별 필터 |
+| 랭킹 | `/rankings` | 전체 해커톤 통합 순위, 기간/해커톤 필터 |
+
+### 핵심 기능
+- **글로벌 검색** (Ctrl+K / Cmd+K): 해커톤, 팀, 페이지를 빠르게 검색
+- **다크모드**: 상단 네비게이션에서 라이트/다크 모드 전환
+- **북마크**: 관심 해커톤을 저장하여 빠르게 접근
+- **실시간 카운트다운**: 마감까지 남은 시간 표시 (색상 변화: 초록 -> 노랑 -> 빨강)
+- **팀 생성**: 캠프 페이지에서 새 팀 생성 가능
+- **동적 상태 계산**: 마감일 기준으로 해커톤 상태(진행중/종료) 자동 업데이트
+
+---
+
+## 폴더 구조
+
+```
+daker-platform/
+├── public/
+│   └── data/                    # 시드 데이터 (JSON)
+│       ├── hackathons.json      # 해커톤 목록
+│       ├── hackathon_detail.json # 해커톤 상세 정보
+│       ├── leaderboard.json     # 리더보드 데이터
+│       └── teams.json           # 팀 데이터
+├── src/
+│   ├── app/                     # Next.js App Router 페이지
+│   │   ├── page.tsx             # 메인 페이지
+│   │   ├── layout.tsx           # 루트 레이아웃
+│   │   ├── globals.css          # 전역 스타일 (색상 변수)
+│   │   ├── hackathons/          # 해커톤 목록 & 상세
+│   │   ├── camp/                # 팀 빌딩
+│   │   ├── rankings/            # 랭킹
+│   │   └── not-found.tsx        # 404 페이지
+│   ├── components/
+│   │   ├── ui/                  # shadcn/ui 공통 컴포넌트
+│   │   ├── layout/              # Navbar, ThemeToggle, DataInitializer
+│   │   ├── shared/              # GlobalSearch, CountdownTimer, EmptyState
+│   │   └── hackathon/           # 해커톤 관련 컴포넌트 (카드, 탭 등)
+│   ├── stores/                  # Zustand 상태 관리
+│   │   ├── hackathonStore.ts
+│   │   ├── teamStore.ts
+│   │   ├── leaderboardStore.ts
+│   │   └── submissionStore.ts
+│   └── lib/
+│       ├── types.ts             # TypeScript 타입 정의
+│       ├── constants.ts         # 상수 (라우트, 상태 라벨, 색상)
+│       ├── data-init.ts         # JSON -> localStorage 초기화
+│       └── utils.ts             # 유틸리티 함수
+└── package.json
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 데이터 흐름
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+JSON 시드 파일 (public/data/)
+    ↓ fetch (최초 방문 시)
+data-init.ts (평탄화 + 상태 계산)
+    ↓ localStorage에 저장
+Zustand stores (persist 미들웨어)
+    ↓
+React 컴포넌트에서 사용
+```
 
-## Learn More
+- `CURRENT_DATA_VERSION`이 변경되면 다음 방문 시 데이터가 자동 갱신됩니다.
+- 북마크와 제출물은 사용자 데이터이므로 버전 업데이트 시에도 유지됩니다.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 로컬 실행 방법
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+# 1. 저장소 클론
+git clone https://github.com/<your-username>/daker-platform.git
+cd daker-platform
 
-## Deploy on Vercel
+# 2. 의존성 설치
+npm install
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# 3. 개발 서버 실행
+npm run dev
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# 4. 브라우저에서 접속
+# http://localhost:3000
+```
+
+### 빌드
+
+```bash
+npm run build
+npm start
+```
+
+---
+
+## 팀
+
+긴급 인수인계 해커톤 참가 프로젝트

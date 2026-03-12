@@ -34,7 +34,7 @@ export default function HomePage() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative overflow-hidden border-b bg-gradient-to-br from-primary/5 via-background to-primary/10">
+      <section className="relative overflow-hidden border-b bg-gradient-to-br from-primary/10 via-background to-primary/5">
         <div className="container mx-auto px-4 py-20 text-center">
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
             <span className="text-primary">DAKER</span>
@@ -117,8 +117,8 @@ export default function HomePage() {
           <h2 className="text-2xl font-bold text-center mb-8">진행중/예정 해커톤</h2>
           <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
             {ongoingHackathons.map((h) => (
-              <Link key={h.slug} href={`/hackathons/${h.slug}`}>
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              <Link key={h.slug} href={`/hackathons/${h.slug}`} className="h-full">
+                <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
                   <CardContent className="pt-6">
                     <div className="flex items-start justify-between gap-2 mb-3">
                       <h3 className="font-semibold line-clamp-2">{h.title}</h3>
