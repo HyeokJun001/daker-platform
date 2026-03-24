@@ -9,15 +9,44 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { STATUS_LABELS, STATUS_COLORS } from "@/lib/constants";
 import CountdownTimer from "@/components/shared/CountdownTimer";
+import AnimatedCounter from "@/components/shared/AnimatedCounter";
+import { Sparkles, Users, Trophy, ArrowRight } from "lucide-react";
 
 function StatCard({ label, value }: { label: string; value: number }) {
   return (
     <div className="text-center">
-      <div className="text-3xl font-bold text-primary">{value}</div>
-      <div className="text-sm text-muted-foreground mt-1">{label}</div>
+      <AnimatedCounter
+        target={value}
+        className="text-4xl font-bold text-primary"
+      />
+      <div className="text-sm text-muted-foreground mt-2">{label}</div>
     </div>
   );
 }
+
+const CTA_ITEMS = [
+  {
+    href: "/hackathons",
+    icon: Sparkles,
+    title: "해커톤 모아보기",
+    desc: "진행중인 해커톤을 탐색하고 참가하세요",
+    gradient: "from-blue-500/10 to-indigo-500/10 dark:from-blue-500/20 dark:to-indigo-500/20",
+  },
+  {
+    href: "/camp",
+    icon: Users,
+    title: "팀 찾기",
+    desc: "함께할 팀원을 찾거나 새 팀을 만드세요",
+    gradient: "from-emerald-500/10 to-teal-500/10 dark:from-emerald-500/20 dark:to-teal-500/20",
+  },
+  {
+    href: "/rankings",
+    icon: Trophy,
+    title: "랭킹 보기",
+    desc: "전체 해커톤 순위를 확인하세요",
+    gradient: "from-amber-500/10 to-orange-500/10 dark:from-amber-500/20 dark:to-orange-500/20",
+  },
+];
 
 export default function HomePage() {
   const hackathons = useHackathonStore((s) => s.hackathons);
@@ -29,25 +58,43 @@ export default function HomePage() {
     0
   );
 
-  const ongoingHackathons = hackathons.filter((h) => h.status === "ongoing" || h.status === "upcoming");
+  const ongoingHackathons = hackathons.filter(
+    (h) => h.status === "ongoing" || h.status === "upcoming"
+  );
 
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative overflow-hidden border-b bg-gradient-to-br from-primary/10 via-background to-primary/5">
-        <div className="container mx-auto px-4 py-20 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
-            <span className="text-primary">DAKER</span>
+      <section className="relative overflow-hidden border-b">
+        {/* Animated gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-primary/5 animate-gradient" />
+
+        {/* Floating decorative elements */}
+        <div className="absolute top-10 left-[10%] w-32 h-32 rounded-full bg-primary/5 blur-2xl animate-float" />
+        <div className="absolute bottom-10 right-[15%] w-40 h-40 rounded-full bg-primary/8 blur-3xl animate-float-delayed" />
+        <div className="absolute top-1/2 left-[60%] w-24 h-24 rounded-full bg-primary/5 blur-2xl animate-float-slow" />
+
+        <div className="relative container mx-auto px-4 py-24 md:py-32 text-center">
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 animate-fade-in-up">
+            <span className="bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">
+              DAKER
+            </span>
           </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 animate-fade-in-up-delayed">
             해커톤 탐색부터 팀 빌딩, 제출, 랭킹까지
-            <br />한 곳에서 관리하는 원스톱 플랫폼
+            <br />
+            한 곳에서 관리하는 원스톱 플랫폼
           </p>
-          <div className="flex flex-wrap justify-center gap-3">
+          <div className="flex flex-wrap justify-center gap-4 animate-fade-in-up-delayed-2">
             <Button size="lg" render={<Link href="/hackathons" />}>
               해커톤 둘러보기
+              <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
-            <Button variant="outline" size="lg" render={<Link href="/camp" />}>
+            <Button
+              variant="outline"
+              size="lg"
+              render={<Link href="/camp" />}
+            >
               팀 찾기
             </Button>
           </div>
@@ -55,7 +102,7 @@ export default function HomePage() {
       </section>
 
       {/* Stats */}
-      <section className="container mx-auto px-4 py-12">
+      <section className="container mx-auto px-4 py-14">
         <div className="grid grid-cols-3 gap-8 max-w-lg mx-auto">
           <StatCard label="해커톤" value={hackathons.length} />
           <StatCard label="팀" value={teams.length} />
@@ -63,62 +110,48 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Quick Links */}
-      <section className="container mx-auto px-4 pb-12">
+      {/* Quick Links - Big CTA Cards */}
+      <section className="container mx-auto px-4 pb-14">
         <h2 className="text-2xl font-bold text-center mb-8">빠른 탐색</h2>
-        <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-          <Link href="/hackathons">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
-              <CardContent className="pt-6">
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
-                </div>
-                <h3 className="font-semibold text-lg mb-2">해커톤 모아보기</h3>
-                <p className="text-sm text-muted-foreground">
-                  진행중인 해커톤을 탐색하고 참가하세요
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Link href="/camp">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
-              <CardContent className="pt-6">
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                </div>
-                <h3 className="font-semibold text-lg mb-2">팀 찾기</h3>
-                <p className="text-sm text-muted-foreground">
-                  함께할 팀원을 찾거나 새 팀을 만드세요
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Link href="/rankings">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
-              <CardContent className="pt-6">
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
-                </div>
-                <h3 className="font-semibold text-lg mb-2">랭킹 보기</h3>
-                <p className="text-sm text-muted-foreground">
-                  전체 해커톤 순위를 확인하세요
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
+        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          {CTA_ITEMS.map((item) => (
+            <Link key={item.href} href={item.href} className="group">
+              <Card className="h-full transition-all duration-300 hover:shadow-xl hover:scale-[1.02] hover:border-primary/30 cursor-pointer overflow-hidden">
+                <CardContent className="p-8">
+                  <div
+                    className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${item.gradient} flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-110`}
+                  >
+                    <item.icon className="w-8 h-8 text-primary" />
+                  </div>
+                  <h3 className="font-semibold text-xl mb-2">{item.title}</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {item.desc}
+                  </p>
+                  <div className="flex items-center text-sm text-primary font-medium">
+                    <span>바로가기</span>
+                    <ArrowRight className="ml-1 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
         </div>
       </section>
 
       {/* Ongoing/Upcoming Hackathons */}
       {ongoingHackathons.length > 0 && (
         <section className="container mx-auto px-4 pb-16">
-          <h2 className="text-2xl font-bold text-center mb-8">진행중/예정 해커톤</h2>
+          <h2 className="text-2xl font-bold text-center mb-8">
+            진행중/예정 해커톤
+          </h2>
           <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
             {ongoingHackathons.map((h) => (
-              <Link key={h.slug} href={`/hackathons/${h.slug}`} className="h-full">
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+              <Link
+                key={h.slug}
+                href={`/hackathons/${h.slug}`}
+                className="h-full"
+              >
+                <Card className="hover:shadow-lg transition-all duration-300 hover:scale-[1.01] cursor-pointer h-full">
                   <CardContent className="pt-6">
                     <div className="flex items-start justify-between gap-2 mb-3">
                       <h3 className="font-semibold line-clamp-2">{h.title}</h3>
@@ -137,8 +170,15 @@ export default function HomePage() {
                       ))}
                     </div>
                     <div className="flex items-center justify-between text-sm text-muted-foreground">
-                      <span>마감: {new Date(h.period.submissionDeadlineAt).toLocaleDateString("ko-KR")}</span>
-                      <CountdownTimer targetDate={h.period.submissionDeadlineAt} />
+                      <span>
+                        마감:{" "}
+                        {new Date(
+                          h.period.submissionDeadlineAt
+                        ).toLocaleDateString("ko-KR")}
+                      </span>
+                      <CountdownTimer
+                        targetDate={h.period.submissionDeadlineAt}
+                      />
                     </div>
                   </CardContent>
                 </Card>

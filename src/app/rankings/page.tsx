@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import EmptyState from "@/components/shared/EmptyState";
 
-type PeriodFilter = "all" | "30d" | "hackathon";
+type PeriodFilter = "all" | "7d" | "30d" | "hackathon";
 
 export default function RankingsPage() {
   const leaderboards = useLeaderboardStore((s) => s.leaderboards);
@@ -34,6 +34,7 @@ export default function RankingsPage() {
         const now = Date.now();
         const submittedAt = new Date(entry.submittedAt).getTime();
 
+        if (period === "7d" && now - submittedAt > 7 * 24 * 60 * 60 * 1000) return;
         if (period === "30d" && now - submittedAt > 30 * 24 * 60 * 60 * 1000) return;
 
         if (!teamScores[entry.teamName]) {
@@ -72,6 +73,13 @@ export default function RankingsPage() {
             onClick={() => setPeriod("all")}
           >
             전체
+          </Button>
+          <Button
+            variant={period === "7d" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setPeriod("7d")}
+          >
+            7일
           </Button>
           <Button
             variant={period === "30d" ? "default" : "outline"}

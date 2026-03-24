@@ -1,7 +1,13 @@
 "use client";
 
 import { useLeaderboardStore } from "@/stores/leaderboardStore";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTeamStore } from "@/stores/teamStore";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -14,12 +20,23 @@ import { Badge } from "@/components/ui/badge";
 import EmptyState from "@/components/shared/EmptyState";
 import type { HackathonDetail } from "@/lib/types";
 
-export default function TabLeaderboard({ detail }: { detail: HackathonDetail }) {
+export default function TabLeaderboard({
+  detail,
+}: {
+  detail: HackathonDetail;
+}) {
   const leaderboard = useLeaderboardStore((s) =>
     s.leaderboards.find((lb) => lb.hackathonSlug === detail.slug)
   );
+  const teams = useTeamStore((s) => s.teams);
+  const hackathonTeams = teams.filter(
+    (t) => t.hackathonSlug === detail.slug
+  );
 
-  if (!leaderboard || leaderboard.entries.length === 0) {
+  if (
+    !leaderboard ||
+    (leaderboard.entries.length === 0 && hackathonTeams.length === 0)
+  ) {
     return (
       <EmptyState
         title="리더보드 데이터가 없습니다"
@@ -28,18 +45,47 @@ export default function TabLeaderboard({ detail }: { detail: HackathonDetail }) 
     );
   }
 
-  const hasBreakdown = leaderboard.entries.some((e) => e.scoreBreakdown);
-  const hasArtifacts = leaderboard.entries.some((e) => e.artifacts);
+  const entries = leaderboard?.entries || [];
+  const hasBreakdown = entries.some((e) => e.scoreBreakdown);
+  const hasArtifacts = entries.some((e) => e.artifacts);
+
+  // Find unsubmitted teams
+  const submittedTeamNames = new Set(entries.map((e) => e.teamName));
+  const unsubmittedTeams = hackathonTeams.filter(
+    (t) => !submittedTeamNames.has(t.name)
+  );
+
+  // Eval formula info
+  const evalInfo = detail.sections.eval;
 
   return (
     <div className="space-y-6">
+      {/* Eval formula info */}
+      {evalInfo.scoreDisplay?.breakdown && (
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-sm font-medium mb-2">평가 산식</p>
+            <div className="flex flex-wrap gap-2">
+              {evalInfo.scoreDisplay.breakdown.map((b) => (
+                <Badge key={b.key} variant="outline">
+                  {b.label}: {b.weightPercent}%
+                </Badge>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>리더보드</span>
-            <span className="text-xs font-normal text-muted-foreground">
-              업데이트: {new Date(leaderboard.updatedAt).toLocaleDateString("ko-KR")}
-            </span>
+            {leaderboard && (
+              <span className="text-xs font-normal text-muted-foreground">
+                업데이트:{" "}
+                {new Date(leaderboard.updatedAt).toLocaleDateString("ko-KR")}
+              </span>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -62,7 +108,7 @@ export default function TabLeaderboard({ detail }: { detail: HackathonDetail }) 
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {leaderboard.entries.map((entry) => (
+                {entries.map((entry) => (
                   <TableRow key={entry.rank}>
                     <TableCell>
                       <span
@@ -79,7 +125,9 @@ export default function TabLeaderboard({ detail }: { detail: HackathonDetail }) 
                         #{entry.rank}
                       </span>
                     </TableCell>
-                    <TableCell className="font-medium">{entry.teamName}</TableCell>
+                    <TableCell className="font-medium">
+                      {entry.teamName}
+                    </TableCell>
                     <TableCell className="text-right font-mono">
                       {entry.score}
                     </TableCell>
@@ -89,7 +137,11 @@ export default function TabLeaderboard({ detail }: { detail: HackathonDetail }) 
                           <div className="flex flex-wrap gap-1 justify-end">
                             {Object.entries(entry.scoreBreakdown).map(
                               ([key, val]) => (
-                                <Badge key={key} variant="outline" className="text-xs">
+                                <Badge
+                                  key={key}
+                                  variant="outline"
+                                  className="text-xs"
+                                >
                                   {key}: {val}
                                 </Badge>
                               )
@@ -129,6 +181,31 @@ export default function TabLeaderboard({ detail }: { detail: HackathonDetail }) 
                         )}
                       </TableCell>
                     )}
+                  </TableRow>
+                ))}
+
+                {/* Unsubmitted teams */}
+                {unsubmittedTeams.map((team) => (
+                  <TableRow
+                    key={`unsubmitted-${team.teamCode}`}
+                    className="opacity-60"
+                  >
+                    <TableCell>
+                      <span className="text-muted-foreground">-</span>
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {team.name}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Badge variant="destructive" className="text-xs">
+                        미제출
+                      </Badge>
+                    </TableCell>
+                    {hasBreakdown && <TableCell />}
+                    <TableCell className="text-right text-sm text-muted-foreground">
+                      -
+                    </TableCell>
+                    {hasArtifacts && <TableCell />}
                   </TableRow>
                 ))}
               </TableBody>

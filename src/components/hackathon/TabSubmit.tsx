@@ -1,7 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useRef } from "react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { useSubmissionStore } from "@/stores/submissionStore";
 import type { HackathonDetail } from "@/lib/types";
 import { toast } from "sonner";
+import { Upload, X, FileText } from "lucide-react";
 
 export default function TabSubmit({ detail }: { detail: HackathonDetail }) {
   const { submit } = detail.sections;
@@ -17,7 +23,8 @@ export default function TabSubmit({ detail }: { detail: HackathonDetail }) {
     (s) => s.hackathonSlug === detail.slug
   );
 
-  const hasMultiStep = submit.submissionItems && submit.submissionItems.length > 0;
+  const hasMultiStep =
+    submit.submissionItems && submit.submissionItems.length > 0;
 
   return (
     <div className="space-y-6">
@@ -92,7 +99,9 @@ export default function TabSubmit({ detail }: { detail: HackathonDetail }) {
                     )}
                   </div>
                   <Badge
-                    variant={sub.status === "submitted" ? "default" : "secondary"}
+                    variant={
+                      sub.status === "submitted" ? "default" : "secondary"
+                    }
                   >
                     {sub.status === "submitted" ? "제출됨" : "임시저장"}
                   </Badge>
@@ -122,6 +131,30 @@ function SubmissionForm({
   const { addSubmission, updateSubmission } = useSubmissionStore();
   const [content, setContent] = useState(existing?.content || "");
   const [notes, setNotes] = useState(existing?.notes || "");
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [fileSize, setFileSize] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setFileName(file.name);
+    const size =
+      file.size < 1024 * 1024
+        ? `${(file.size / 1024).toFixed(1)} KB`
+        : `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
+    setFileSize(size);
+    setContent(`[FILE] ${file.name} (${size})`);
+    toast.success(`${file.name} 파일이 선택되었습니다.`);
+  };
+
+  const clearFile = () => {
+    setFileName(null);
+    setFileSize(null);
+    setContent("");
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   const handleSubmit = (status: "draft" | "submitted") => {
     if (!content.trim()) {
@@ -149,7 +182,9 @@ function SubmissionForm({
       });
     }
 
-    toast.success(status === "submitted" ? "제출 완료!" : "임시 저장되었습니다");
+    toast.success(
+      status === "submitted" ? "제출 완료!" : "임시 저장되었습니다"
+    );
   };
 
   const placeholder =
@@ -159,12 +194,63 @@ function SubmissionForm({
       ? "텍스트 또는 URL을 입력하세요"
       : "파일명 또는 URL을 입력하세요";
 
+  const showFileUpload =
+    format === "zip" || format === "pdf" || format === "csv";
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-base">{title}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* File Upload Dropzone */}
+        {showFileUpload && (
+          <div>
+            <label className="text-sm font-medium mb-1.5 block">
+              파일 업로드
+            </label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".zip,.pdf,.csv,.ipynb,.py"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+            {!fileName ? (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center hover:border-primary/50 hover:bg-primary/5 transition-colors cursor-pointer"
+              >
+                <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">
+                  파일을 클릭하여 업로드
+                </p>
+                <p className="text-xs text-muted-foreground/70 mt-1">
+                  ZIP, PDF, CSV, IPYNB, PY
+                </p>
+              </button>
+            ) : (
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border">
+                <FileText className="w-5 h-5 text-primary shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{fileName}</p>
+                  <p className="text-xs text-muted-foreground">{fileSize}</p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearFile}
+                  className="shrink-0"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* URL / Text Input */}
         <div>
           <label className="text-sm font-medium mb-1.5 block">
             {format.includes("url") ? "URL" : "내용"}

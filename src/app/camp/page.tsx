@@ -39,6 +39,7 @@ function CampContent() {
     lookingFor: "",
     intro: "",
     contactUrl: "",
+    isOpen: true,
   });
 
   const handleCreateTeam = () => {
@@ -51,7 +52,7 @@ function CampContent() {
       teamCode: `T-${Date.now()}`,
       hackathonSlug: newTeam.hackathonSlug,
       name: newTeam.name,
-      isOpen: true,
+      isOpen: newTeam.isOpen,
       memberCount: 1,
       lookingFor: newTeam.lookingFor
         .split(",")
@@ -70,6 +71,7 @@ function CampContent() {
       lookingFor: "",
       intro: "",
       contactUrl: "",
+      isOpen: true,
     });
   };
 
@@ -134,12 +136,35 @@ function CampContent() {
                 />
               </div>
               <div>
-                <label className="text-sm font-medium mb-1.5 block">연락처 링크</label>
+                <label className="text-sm font-medium mb-1.5 block">
+                  연락처 (카카오톡 오픈채팅, 디스코드 등)
+                </label>
                 <Input
                   value={newTeam.contactUrl}
                   onChange={(e) => setNewTeam((p) => ({ ...p, contactUrl: e.target.value }))}
                   placeholder="https://open.kakao.com/..."
                 />
+              </div>
+              <div className="flex items-center gap-3">
+                <label className="text-sm font-medium">모집 상태</label>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={newTeam.isOpen}
+                  onClick={() => setNewTeam((p) => ({ ...p, isOpen: !p.isOpen }))}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
+                    newTeam.isOpen ? "bg-primary" : "bg-muted"
+                  }`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-background shadow-lg ring-0 transition-transform ${
+                      newTeam.isOpen ? "translate-x-5" : "translate-x-0"
+                    }`}
+                  />
+                </button>
+                <span className="text-sm text-muted-foreground">
+                  {newTeam.isOpen ? "모집중" : "모집마감"}
+                </span>
               </div>
               <Button className="w-full" onClick={handleCreateTeam}>
                 팀 생성

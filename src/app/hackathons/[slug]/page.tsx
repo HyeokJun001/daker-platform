@@ -14,6 +14,7 @@ import TabSchedule from "@/components/hackathon/TabSchedule";
 import TabSubmit from "@/components/hackathon/TabSubmit";
 import TabLeaderboard from "@/components/hackathon/TabLeaderboard";
 import StatusBadge from "@/components/hackathon/StatusBadge";
+import AHAChatButton from "@/components/aha/AHAChatButton";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -135,6 +136,9 @@ export default function HackathonDetailPage() {
           description="이 해커톤의 상세 정보가 아직 등록되지 않았습니다."
         />
       )}
+
+      {/* AHA Chatbot */}
+      {detail && <AHAChatButton detail={detail} />}
     </div>
   );
 }
