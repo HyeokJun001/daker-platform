@@ -45,57 +45,66 @@ export default function HackathonsPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">해커톤</h1>
+        <h1 className="text-3xl font-bold mb-1">해커톤</h1>
         <p className="text-muted-foreground">
-          다양한 해커톤을 탐색하고 참가하세요
+          다양한 해커톤을 탐색하고 참가하세요 · 총 {hackathons.length}개
         </p>
       </div>
 
       {/* Filters */}
       <div className="space-y-4 mb-8">
-        {/* Status Filter */}
-        <div className="flex flex-wrap gap-2">
-          {STATUS_FILTERS.map((f) => (
-            <Button
-              key={f.value}
-              variant={statusFilter === f.value ? "default" : "outline"}
-              size="sm"
-              onClick={() => setStatusFilter(f.value)}
-            >
-              {f.label}
-            </Button>
-          ))}
-          <Button
-            variant={showBookmarked ? "default" : "outline"}
-            size="sm"
+        {/* Status Filter - pill style */}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex gap-1 p-1 bg-muted rounded-xl">
+            {STATUS_FILTERS.map((f) => (
+              <button
+                key={f.value}
+                onClick={() => setStatusFilter(f.value)}
+                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                  statusFilter === f.value
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+          <button
             onClick={() => setShowBookmarked(!showBookmarked)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${
+              showBookmarked
+                ? "bg-red-50 text-red-600 border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-800"
+                : "text-muted-foreground hover:text-foreground border-border"
+            }`}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill={showBookmarked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill={showBookmarked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
             북마크
-          </Button>
+          </button>
         </div>
 
         {/* Tag Filter */}
         <div className="flex flex-wrap gap-1.5">
           {allTags.map((tag) => (
-            <Badge
+            <button
               key={tag}
-              variant={selectedTags.includes(tag) ? "default" : "outline"}
-              className="cursor-pointer"
               onClick={() => toggleTag(tag)}
+              className={`px-3 py-1 rounded-full text-xs font-medium transition-all border ${
+                selectedTags.includes(tag)
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-background text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
+              }`}
             >
               {tag}
-            </Badge>
+            </button>
           ))}
           {selectedTags.length > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-xs h-6"
+            <button
               onClick={() => setSelectedTags([])}
+              className="px-3 py-1 rounded-full text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
-              초기화
-            </Button>
+              ✕ 초기화
+            </button>
           )}
         </div>
       </div>

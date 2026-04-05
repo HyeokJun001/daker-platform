@@ -98,31 +98,41 @@ export default function HackathonDetailPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="mb-6">
-        <Link
-          href="/hackathons"
-          className="text-sm text-muted-foreground hover:text-foreground mb-4 inline-flex items-center gap-1"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
-          목록으로
-        </Link>
-        <div className="flex items-start justify-between gap-4 mt-2">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold mb-2">
-              {hackathon.title}
-            </h1>
-            <div className="flex items-center gap-2">
-              <StatusBadge status={hackathon.status} />
-              <span className="text-sm text-muted-foreground">
-                마감:{" "}
-                {new Date(hackathon.period.submissionDeadlineAt).toLocaleDateString("ko-KR")}
-              </span>
+    <div>
+      {/* Hero Banner */}
+      <div className="relative bg-gradient-to-br from-primary/10 via-primary/5 to-background border-b overflow-hidden">
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4" />
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary/10 rounded-full blur-2xl translate-y-1/2 -translate-x-1/4" />
+        </div>
+        <div className="container mx-auto px-4 py-8 relative">
+          <Link
+            href="/hackathons"
+            className="text-sm text-muted-foreground hover:text-foreground mb-4 inline-flex items-center gap-1.5 transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+            목록으로
+          </Link>
+          <h1 className="text-2xl md:text-3xl font-bold mt-3 mb-3">
+            {hackathon.title}
+          </h1>
+          <div className="flex flex-wrap items-center gap-3">
+            <StatusBadge status={hackathon.status} />
+            <span className="text-sm text-muted-foreground">
+              마감: {new Date(hackathon.period.submissionDeadlineAt).toLocaleDateString("ko-KR")}
+            </span>
+            <div className="flex flex-wrap gap-1.5">
+              {hackathon.tags.map((tag) => (
+                <span key={tag} className="px-2 py-0.5 rounded-md bg-primary/10 text-xs font-medium text-primary">
+                  {tag}
+                </span>
+              ))}
             </div>
           </div>
         </div>
       </div>
+
+      <div className="container mx-auto px-4 py-6">
 
       {/* Tabs */}
       {detail ? (
@@ -169,6 +179,7 @@ export default function HackathonDetailPage() {
 
       {/* AHA Chatbot */}
       {detail && <AHAChatButton detail={detail} />}
+      </div>
     </div>
   );
 }

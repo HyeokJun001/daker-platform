@@ -2,23 +2,25 @@
 
 import { useLeaderboardStore } from "@/stores/leaderboardStore";
 import { useTeamStore } from "@/stores/teamStore";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import EmptyState from "@/components/shared/EmptyState";
 import type { HackathonDetail } from "@/lib/types";
+import { Trophy, ExternalLink, FileText, AlertCircle } from "lucide-react";
+
+const RANK_STYLES: Record<number, { bg: string; text: string; ring: string }> = {
+  1: { bg: "bg-yellow-400", text: "text-yellow-900", ring: "ring-yellow-300" },
+  2: { bg: "bg-gray-300", text: "text-gray-800", ring: "ring-gray-200" },
+  3: { bg: "bg-amber-500", text: "text-amber-950", ring: "ring-amber-300" },
+};
+
+const AVATAR_COLORS = [
+  "bg-blue-100 text-blue-700",
+  "bg-emerald-100 text-emerald-700",
+  "bg-purple-100 text-purple-700",
+  "bg-orange-100 text-orange-700",
+  "bg-pink-100 text-pink-700",
+  "bg-cyan-100 text-cyan-700",
+];
 
 export default function TabLeaderboard({
   detail,
@@ -46,173 +48,163 @@ export default function TabLeaderboard({
   }
 
   const entries = leaderboard?.entries || [];
-  const hasBreakdown = entries.some((e) => e.scoreBreakdown);
-  const hasArtifacts = entries.some((e) => e.artifacts);
-
-  // Find unsubmitted teams
   const submittedTeamNames = new Set(entries.map((e) => e.teamName));
   const unsubmittedTeams = hackathonTeams.filter(
     (t) => !submittedTeamNames.has(t.name)
   );
-
-  // Eval formula info
   const evalInfo = detail.sections.eval;
 
   return (
     <div className="space-y-6">
-      {/* Eval formula info */}
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+            <Trophy className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold">리더보드</h3>
+            <p className="text-xs text-muted-foreground">
+              {entries.length}팀 참가
+              {leaderboard && ` · ${new Date(leaderboard.updatedAt).toLocaleDateString("ko-KR")} 업데이트`}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Eval formula chips */}
       {evalInfo.scoreDisplay?.breakdown && (
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm font-medium mb-2">평가 산식</p>
-            <div className="flex flex-wrap gap-2">
-              {evalInfo.scoreDisplay.breakdown.map((b) => (
-                <Badge key={b.key} variant="outline">
-                  {b.label}: {b.weightPercent}%
-                </Badge>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex flex-wrap items-center gap-2 p-3 rounded-xl bg-muted/50">
+          <span className="text-xs font-medium text-muted-foreground">평가 산식</span>
+          {evalInfo.scoreDisplay.breakdown.map((b) => (
+            <span key={b.key} className="px-2.5 py-1 rounded-full bg-background text-xs font-medium border">
+              {b.label} {b.weightPercent}%
+            </span>
+          ))}
+        </div>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>리더보드</span>
-            {leaderboard && (
-              <span className="text-xs font-normal text-muted-foreground">
-                업데이트:{" "}
-                {new Date(leaderboard.updatedAt).toLocaleDateString("ko-KR")}
-              </span>
-            )}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground mb-4">
-            {detail.sections.leaderboard.note}
-          </p>
+      {/* Note */}
+      <p className="text-sm text-muted-foreground px-1">
+        {detail.sections.leaderboard.note}
+      </p>
 
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-16">순위</TableHead>
-                  <TableHead>팀명</TableHead>
-                  <TableHead className="text-right">점수</TableHead>
-                  {hasBreakdown && (
-                    <TableHead className="text-right">상세</TableHead>
-                  )}
-                  <TableHead className="text-right">제출일</TableHead>
-                  {hasArtifacts && <TableHead>산출물</TableHead>}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {entries.map((entry) => (
-                  <TableRow key={entry.rank}>
-                    <TableCell>
-                      <span
-                        className={`font-bold ${
-                          entry.rank === 1
-                            ? "text-yellow-500"
-                            : entry.rank === 2
-                            ? "text-gray-400"
-                            : entry.rank === 3
-                            ? "text-amber-600"
-                            : ""
-                        }`}
-                      >
-                        #{entry.rank}
-                      </span>
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {entry.teamName}
-                    </TableCell>
-                    <TableCell className="text-right font-mono">
-                      {entry.score}
-                    </TableCell>
-                    {hasBreakdown && (
-                      <TableCell className="text-right">
-                        {entry.scoreBreakdown && (
-                          <div className="flex flex-wrap gap-1 justify-end">
-                            {Object.entries(entry.scoreBreakdown).map(
-                              ([key, val]) => (
-                                <Badge
-                                  key={key}
-                                  variant="outline"
-                                  className="text-xs"
-                                >
-                                  {key}: {val}
-                                </Badge>
-                              )
-                            )}
-                          </div>
-                        )}
-                      </TableCell>
-                    )}
-                    <TableCell className="text-right text-sm text-muted-foreground">
-                      {new Date(entry.submittedAt).toLocaleDateString("ko-KR")}
-                    </TableCell>
-                    {hasArtifacts && (
-                      <TableCell>
-                        {entry.artifacts && (
-                          <div className="flex gap-2">
-                            {entry.artifacts.webUrl && (
-                              <a
-                                href={entry.artifacts.webUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-xs text-primary hover:underline"
-                              >
-                                웹
-                              </a>
-                            )}
-                            {entry.artifacts.pdfUrl && (
-                              <a
-                                href={entry.artifacts.pdfUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-xs text-primary hover:underline"
-                              >
-                                PDF
-                              </a>
-                            )}
-                          </div>
-                        )}
-                      </TableCell>
-                    )}
-                  </TableRow>
-                ))}
+      {/* Leaderboard rows */}
+      <div className="space-y-2">
+        {entries.map((entry, idx) => {
+          const rankStyle = RANK_STYLES[entry.rank];
+          const avatarColor = AVATAR_COLORS[idx % AVATAR_COLORS.length];
+          const isTop3 = entry.rank <= 3;
 
-                {/* Unsubmitted teams */}
-                {unsubmittedTeams.map((team) => (
-                  <TableRow
-                    key={`unsubmitted-${team.teamCode}`}
-                    className="opacity-60"
+          return (
+            <div
+              key={entry.rank}
+              className={`flex items-center gap-4 p-4 rounded-2xl border transition-all hover:shadow-md ${
+                isTop3
+                  ? "bg-gradient-to-r from-primary/[0.03] to-transparent border-primary/10"
+                  : "bg-background hover:bg-muted/30"
+              }`}
+            >
+              {/* Rank badge */}
+              <div className="shrink-0 w-10 text-center">
+                {rankStyle ? (
+                  <span
+                    className={`inline-flex items-center justify-center w-8 h-8 rounded-lg ${rankStyle.bg} ${rankStyle.text} font-bold text-sm ring-2 ${rankStyle.ring}`}
                   >
-                    <TableCell>
-                      <span className="text-muted-foreground">-</span>
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {team.name}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Badge variant="destructive" className="text-xs">
-                        미제출
-                      </Badge>
-                    </TableCell>
-                    {hasBreakdown && <TableCell />}
-                    <TableCell className="text-right text-sm text-muted-foreground">
-                      -
-                    </TableCell>
-                    {hasArtifacts && <TableCell />}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                    {entry.rank}
+                  </span>
+                ) : (
+                  <span className="text-sm font-semibold text-muted-foreground">
+                    #{entry.rank}
+                  </span>
+                )}
+              </div>
+
+              {/* Team avatar */}
+              <div className={`shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${avatarColor}`}>
+                {entry.teamName.charAt(0)}
+              </div>
+
+              {/* Team info */}
+              <div className="flex-1 min-w-0">
+                <p className={`font-semibold truncate ${isTop3 ? "text-base" : "text-sm"}`}>
+                  {entry.teamName}
+                </p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-xs text-muted-foreground">
+                    {new Date(entry.submittedAt).toLocaleDateString("ko-KR")}
+                  </span>
+                  {entry.scoreBreakdown && (
+                    <div className="flex gap-1">
+                      {Object.entries(entry.scoreBreakdown).map(([key, val]) => (
+                        <span key={key} className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                          {key}: {val}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Artifacts */}
+              {entry.artifacts && (
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {entry.artifacts.webUrl && (
+                    <a
+                      href={entry.artifacts.webUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center hover:bg-primary/10 transition-colors"
+                      title="웹 보기"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
+                    </a>
+                  )}
+                  {entry.artifacts.pdfUrl && (
+                    <a
+                      href={entry.artifacts.pdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center hover:bg-primary/10 transition-colors"
+                      title="PDF 보기"
+                    >
+                      <FileText className="w-3.5 h-3.5 text-muted-foreground" />
+                    </a>
+                  )}
+                </div>
+              )}
+
+              {/* Score */}
+              <div className="shrink-0 text-right min-w-[60px]">
+                <span className={`font-bold font-mono ${isTop3 ? "text-xl text-primary" : "text-base"}`}>
+                  {entry.score.toFixed(2)}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Unsubmitted teams */}
+        {unsubmittedTeams.map((team) => (
+          <div
+            key={`unsubmitted-${team.teamCode}`}
+            className="flex items-center gap-4 p-4 rounded-2xl border border-dashed opacity-50"
+          >
+            <div className="shrink-0 w-10 text-center">
+              <span className="text-sm text-muted-foreground">-</span>
+            </div>
+            <div className="shrink-0 w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+              <AlertCircle className="w-4 h-4 text-muted-foreground" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-sm truncate">{team.name}</p>
+            </div>
+            <Badge variant="destructive" className="text-xs shrink-0">
+              미제출
+            </Badge>
           </div>
-        </CardContent>
-      </Card>
+        ))}
+      </div>
     </div>
   );
 }
