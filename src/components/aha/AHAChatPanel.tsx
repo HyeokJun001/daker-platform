@@ -17,27 +17,40 @@ interface AHAChatPanelProps {
 
 export default function AHAChatPanel({ detail, onClose }: AHAChatPanelProps) {
   const profile = useAHAStore((s) => s.profile);
-  const chatHistory = useAHAStore((s) => s.chatHistory[detail.slug] || []);
+  const chatHistory = useAHAStore((s) => s.chatHistory);
   const addMessage = useAHAStore((s) => s.addMessage);
   const clearChat = useAHAStore((s) => s.clearChat);
   const teams = useTeamStore((s) => s.teams);
 
+  const messages = chatHistory[detail.slug] || [];
+
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [showSetup, setShowSetup] = useState(!profile);
+  const [showSetup, setShowSetup] = useState(false);
+  const [initialized, setInitialized] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Determine setup visibility after mount (to avoid hydration mismatch)
+  useEffect(() => {
+    setShowSetup(!profile);
+    setInitialized(true);
+  }, [profile]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chatHistory, isTyping]);
+  }, [messages.length, isTyping]);
 
   // Send welcome message on first open after profile setup
   useEffect(() => {
-    if (profile && chatHistory.length === 0 && !showSetup) {
-      const welcome = generateResponse("안녕", profile, detail, teams);
-      addMessage(detail.slug, welcome);
+    if (initialized && profile && messages.length === 0 && !showSetup) {
+      try {
+        const welcome = generateResponse("안녕", profile, detail, teams);
+        addMessage(detail.slug, welcome);
+      } catch (e) {
+        console.error("AHA welcome error:", e);
+      }
     }
-  }, [profile, showSetup]);
+  }, [initialized, profile, showSetup, detail.slug]);
 
   const handleSend = () => {
     if (!input.trim() || !profile) return;
@@ -50,13 +63,23 @@ export default function AHAChatPanel({ detail, onClose }: AHAChatPanelProps) {
     };
 
     addMessage(detail.slug, userMsg);
+    const currentInput = input;
     setInput("");
     setIsTyping(true);
 
-    // Simulate thinking delay
     setTimeout(() => {
-      const response = generateResponse(input, profile, detail, teams);
-      addMessage(detail.slug, response);
+      try {
+        const response = generateResponse(currentInput, profile, detail, teams);
+        addMessage(detail.slug, response);
+      } catch (e) {
+        console.error("AHA response error:", e);
+        addMessage(detail.slug, {
+          id: `msg-err-${Date.now()}`,
+          role: "assistant",
+          content: "죄송합니다, 응답 생성 중 오류가 발생했습니다. 다시 시도해주세요.",
+          timestamp: new Date().toISOString(),
+        });
+      }
       setIsTyping(false);
     }, 600 + Math.random() * 800);
   };
@@ -76,14 +99,51 @@ export default function AHAChatPanel({ detail, onClose }: AHAChatPanelProps) {
     clearChat(detail.slug);
     if (profile) {
       setTimeout(() => {
-        const welcome = generateResponse("안녕", profile, detail, teams);
-        addMessage(detail.slug, welcome);
+        try {
+          const welcome = generateResponse("안녕", profile, detail, teams);
+          addMessage(detail.slug, welcome);
+        } catch (e) {
+          console.error("AHA reset error:", e);
+        }
       }, 100);
     }
   };
 
+  const handleQuickAction = (action: string) => {
+    if (!profile) return;
+    const userMsg = {
+      id: `msg-${Date.now()}`,
+      role: "user" as const,
+      content: action,
+      timestamp: new Date().toISOString(),
+    };
+    addMessage(detail.slug, userMsg);
+    setIsTyping(true);
+    setTimeout(() => {
+      try {
+        const response = generateResponse(action, profile, detail, teams);
+        addMessage(detail.slug, response);
+      } catch (e) {
+        console.error("AHA action error:", e);
+      }
+      setIsTyping(false);
+    }, 600 + Math.random() * 800);
+  };
+
+  if (!initialized) {
+    return (
+      <div
+        className="fixed bottom-20 right-4 md:right-6 z-50 w-[360px] max-w-[calc(100vw-2rem)] bg-background border rounded-2xl shadow-2xl flex items-center justify-center"
+        style={{ height: "200px" }}
+      >
+        <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   return (
-    <div className="fixed bottom-20 right-4 md:right-6 z-50 w-[360px] max-w-[calc(100vw-2rem)] bg-background border rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+    <div
+      className="fixed bottom-20 right-4 md:right-6 z-50 w-[360px] max-w-[calc(100vw-2rem)] bg-background border rounded-2xl shadow-2xl flex flex-col overflow-hidden"
       style={{ height: "min(520px, calc(100vh - 120px))" }}
     >
       {/* Header */}
@@ -121,7 +181,7 @@ export default function AHAChatPanel({ detail, onClose }: AHAChatPanelProps) {
         <>
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {chatHistory.map((msg) => (
+            {messages.map((msg) => (
               <div key={msg.id}>
                 <div
                   className={`flex ${
@@ -148,11 +208,13 @@ export default function AHAChatPanel({ detail, onClose }: AHAChatPanelProps) {
                 </div>
 
                 {/* Fit Score Gauge inline */}
-                {msg.role === "assistant" && msg.metadata?.fitScore != null && msg.content.includes("적합도") && (
-                  <div className="flex justify-start mt-2 pl-2">
-                    <FitScoreGauge score={msg.metadata.fitScore} size={90} />
-                  </div>
-                )}
+                {msg.role === "assistant" &&
+                  msg.metadata?.fitScore != null &&
+                  msg.content.includes("적합도") && (
+                    <div className="flex justify-start mt-2 pl-2">
+                      <FitScoreGauge score={msg.metadata.fitScore} size={90} />
+                    </div>
+                  )}
               </div>
             ))}
 
@@ -160,9 +222,18 @@ export default function AHAChatPanel({ detail, onClose }: AHAChatPanelProps) {
               <div className="flex justify-start">
                 <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3">
                   <div className="flex gap-1">
-                    <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                    <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                    <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                    <span
+                      className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce"
+                      style={{ animationDelay: "0ms" }}
+                    />
+                    <span
+                      className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce"
+                      style={{ animationDelay: "150ms" }}
+                    />
+                    <span
+                      className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce"
+                      style={{ animationDelay: "300ms" }}
+                    />
                   </div>
                 </div>
               </div>
@@ -177,28 +248,9 @@ export default function AHAChatPanel({ detail, onClose }: AHAChatPanelProps) {
               <button
                 key={action}
                 type="button"
-                onClick={() => {
-                  setInput(action);
-                  setTimeout(() => {
-                    const userMsg = {
-                      id: `msg-${Date.now()}`,
-                      role: "user" as const,
-                      content: action,
-                      timestamp: new Date().toISOString(),
-                    };
-                    addMessage(detail.slug, userMsg);
-                    setIsTyping(true);
-                    setTimeout(() => {
-                      if (profile) {
-                        const response = generateResponse(action, profile, detail, teams);
-                        addMessage(detail.slug, response);
-                      }
-                      setIsTyping(false);
-                    }, 600 + Math.random() * 800);
-                    setInput("");
-                  }, 50);
-                }}
-                className="px-2.5 py-1 rounded-full text-xs bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                onClick={() => handleQuickAction(action)}
+                disabled={isTyping}
+                className="px-2.5 py-1 rounded-full text-xs bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50"
               >
                 {action}
               </button>
