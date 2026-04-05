@@ -17,6 +17,36 @@ import StatusBadge from "@/components/hackathon/StatusBadge";
 import AHAChatButton from "@/components/aha/AHAChatButton";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import React from "react";
+
+class TabErrorBoundary extends React.Component<
+  { children: React.ReactNode; name: string },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode; name: string }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-8 text-center text-muted-foreground">
+          <p className="text-sm">이 탭을 불러오는 중 오류가 발생했습니다.</p>
+          <button
+            onClick={() => this.setState({ hasError: false })}
+            className="mt-2 text-sm text-primary hover:underline"
+          >
+            다시 시도
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 const TABS = [
   { value: "overview", label: "개요" },
@@ -106,28 +136,28 @@ export default function HackathonDetailPage() {
           </TabsList>
 
           <TabsContent value="overview">
-            <TabOverview detail={detail} />
+            <TabErrorBoundary name="overview"><TabOverview detail={detail} /></TabErrorBoundary>
           </TabsContent>
           <TabsContent value="teams">
-            <TabTeams detail={detail} />
+            <TabErrorBoundary name="teams"><TabTeams detail={detail} /></TabErrorBoundary>
           </TabsContent>
           <TabsContent value="eval">
-            <TabEval detail={detail} />
+            <TabErrorBoundary name="eval"><TabEval detail={detail} /></TabErrorBoundary>
           </TabsContent>
           <TabsContent value="prize">
-            <TabPrize detail={detail} />
+            <TabErrorBoundary name="prize"><TabPrize detail={detail} /></TabErrorBoundary>
           </TabsContent>
           <TabsContent value="info">
-            <TabInfo detail={detail} />
+            <TabErrorBoundary name="info"><TabInfo detail={detail} /></TabErrorBoundary>
           </TabsContent>
           <TabsContent value="schedule">
-            <TabSchedule detail={detail} />
+            <TabErrorBoundary name="schedule"><TabSchedule detail={detail} /></TabErrorBoundary>
           </TabsContent>
           <TabsContent value="submit">
-            <TabSubmit detail={detail} />
+            <TabErrorBoundary name="submit"><TabSubmit detail={detail} /></TabErrorBoundary>
           </TabsContent>
           <TabsContent value="leaderboard">
-            <TabLeaderboard detail={detail} />
+            <TabErrorBoundary name="leaderboard"><TabLeaderboard detail={detail} /></TabErrorBoundary>
           </TabsContent>
         </Tabs>
       ) : (

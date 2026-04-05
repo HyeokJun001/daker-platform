@@ -35,4 +35,4 @@ export const STORAGE_KEYS = {
   DATA_VERSION: "daker_data_version",
 } as const;
 
-export const CURRENT_DATA_VERSION = "1.1.0";
+export const CURRENT_DATA_VERSION = "1.2.0";

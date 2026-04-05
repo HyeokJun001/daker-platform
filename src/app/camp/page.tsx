@@ -14,7 +14,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import EmptyState from "@/components/shared/EmptyState";
 import { toast } from "sonner";
@@ -84,11 +83,11 @@ function CampContent() {
             함께할 팀원을 찾거나 새 팀을 만드세요
           </p>
         </div>
+        <Button onClick={() => setShowCreateDialog(true)}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+          팀 만들기
+        </Button>
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-          <DialogTrigger>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-            팀 만들기
-          </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>새 팀 만들기</DialogTitle>

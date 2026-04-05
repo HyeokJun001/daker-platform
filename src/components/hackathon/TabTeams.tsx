@@ -33,13 +33,11 @@ export default function TabTeams({ detail }: { detail: HackathonDetail }) {
         <h3 className="text-lg font-semibold">
           참가 팀 ({hackathonTeams.length})
         </h3>
-        <Button
-          variant="outline"
-          size="sm"
-          render={<Link href={`/camp?hackathon=${detail.slug}`} />}
-        >
-          캠프에서 팀 찾기
-        </Button>
+        <Link href={`/camp?hackathon=${detail.slug}`}>
+          <Button variant="outline" size="sm">
+            캠프에서 팀 찾기
+          </Button>
+        </Link>
       </div>
 
       {hackathonTeams.length === 0 ? (
